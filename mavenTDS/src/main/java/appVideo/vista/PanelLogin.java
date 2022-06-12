@@ -1,9 +1,14 @@
-package um.tds.mavenTDS.vista;
+package appVideo.vista;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
@@ -15,10 +20,12 @@ import javax.swing.JButton;
 import java.awt.Component;
 import java.awt.FlowLayout;
 
+import appVideo.controlador.Controlador;
+
 public class PanelLogin extends JPanel {
 	private static PanelLogin unicaInstancia;
 	private JTextField txtUsuario;
-	private JPasswordField txtContrasea;
+	private JPasswordField txtPassword;
 	
 	public static PanelLogin getUnicaInstancia() {
 		if (unicaInstancia == null)
@@ -29,11 +36,11 @@ public class PanelLogin extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public PanelLogin() {
+	private PanelLogin() {
 		setLayout(new BorderLayout(0, 0));
 		
 		JPanel pnlCampos = new JPanel();
-		pnlCampos.setBorder(new TitledBorder(null, "Iniciar Sesi\u00F3n", TitledBorder.CENTER, TitledBorder.TOP, null, null));
+		pnlCampos.setBorder(new TitledBorder(null, "Iniciar Sesión", TitledBorder.CENTER, TitledBorder.TOP, null, null));
 		add(pnlCampos, BorderLayout.CENTER);
 		pnlCampos.setLayout(new BoxLayout(pnlCampos, BoxLayout.Y_AXIS));
 		
@@ -58,10 +65,10 @@ public class PanelLogin extends JPanel {
 		lblContrasea.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlContrasea.add(lblContrasea, BorderLayout.CENTER);
 		
-		txtContrasea = new JPasswordField();
-		txtContrasea.setHorizontalAlignment(SwingConstants.CENTER);
-		txtContrasea.setColumns(15);
-		pnlContrasea.add(txtContrasea, BorderLayout.EAST);
+		txtPassword = new JPasswordField();
+		txtPassword.setHorizontalAlignment(SwingConstants.CENTER);
+		txtPassword.setColumns(15);
+		pnlContrasea.add(txtPassword, BorderLayout.EAST);
 		
 		JPanel pnlBotones = new JPanel();
 		pnlBotones.setBorder(new EmptyBorder(5, 0, 5, 0));
@@ -71,5 +78,19 @@ public class PanelLogin extends JPanel {
 		pnlBotones.add(btnLogin);
 
 	}
+	
+	private void addManejadorBotonLogin(JButton btnLogin) {
+		btnLogin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				boolean login = Controlador.getUnicaInstancia().loginUsuario(txtUsuario.getText(),
+						new String(txtPassword.getPassword()));
 
+				if (login) {
+					VentanaPrincipal.getUnicaInstancia().loginRealizado();
+				} else
+					JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Nombre de usuario o contraseña no válido",
+							"Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+	}
 }

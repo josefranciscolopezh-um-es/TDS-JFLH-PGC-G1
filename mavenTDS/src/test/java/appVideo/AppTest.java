@@ -1,4 +1,4 @@
-package um.tds.mavenTDS;
+package appVideo;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

@@ -1,4 +1,4 @@
-package um.tds.mavenTDS;
+package appVideo;
 
 /**
  * Hello world!

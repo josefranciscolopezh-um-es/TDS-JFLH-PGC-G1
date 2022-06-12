@@ -1,4 +1,4 @@
-package um.tds.mavenTDS.vista;
+package appVideo.vista;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -32,7 +32,7 @@ public class PanelNuevaLista extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public PanelNuevaLista() {
+	private PanelNuevaLista() {
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(10, 10));
 		

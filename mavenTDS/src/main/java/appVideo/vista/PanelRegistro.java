@@ -1,4 +1,4 @@
-package um.tds.mavenTDS.vista;
+package appVideo.vista;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Component;
 import com.toedter.calendar.JDateChooser;
+import java.awt.Dimension;
 
 public class PanelRegistro extends JPanel {
 	private static PanelRegistro unicaInstancia;
@@ -36,7 +37,7 @@ public class PanelRegistro extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public PanelRegistro() {
+	private PanelRegistro() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 		JPanel pnlCampos = new JPanel();
@@ -77,11 +78,13 @@ public class PanelRegistro extends JPanel {
 		pnlDatosPersonales.add(pnlNacimiento);
 		pnlNacimiento.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblNacimiento = new JLabel("* Fecha de Nacimiento (dd/mm/aaaa): ");
+		JLabel lblNacimiento = new JLabel("* Fecha de Nacimiento: ");
 		lblNacimiento.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlNacimiento.add(lblNacimiento, BorderLayout.CENTER);
 		
 		JDateChooser fechaNacimiento = new JDateChooser();
+		fechaNacimiento.setPreferredSize(new Dimension(130, 19));
+		fechaNacimiento.setDateFormatString("dd/MM/yyyy");
 		pnlNacimiento.add(fechaNacimiento, BorderLayout.EAST);
 		
 		JPanel pnlEmail = new JPanel();

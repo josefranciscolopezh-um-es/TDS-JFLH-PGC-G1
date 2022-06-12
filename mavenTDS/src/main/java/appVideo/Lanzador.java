@@ -1,8 +1,8 @@
-package um.tds.mavenTDS;
+package appVideo;
 
 import java.awt.EventQueue;
 
-import um.tds.mavenTDS.vista.VentanaPrincipal;
+import appVideo.vista.VentanaPrincipal;
 
 public class Lanzador {
 
@@ -13,8 +13,7 @@ public class Lanzador {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaPrincipal window = new VentanaPrincipal();
-					window.mostrarVentana();
+					VentanaPrincipal.getUnicaInstancia().mostrarVentana();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

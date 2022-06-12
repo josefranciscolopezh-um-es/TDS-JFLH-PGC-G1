@@ -1,4 +1,4 @@
-package um.tds.mavenTDS.vista;
+package appVideo.vista;
 
 import java.awt.EventQueue;
 
@@ -11,6 +11,8 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.BoxLayout;
 import javax.swing.border.SoftBevelBorder;
+
+import appVideo.controlador.Controlador;
 
 import javax.swing.border.BevelBorder;
 import java.awt.FlowLayout;
@@ -28,14 +30,21 @@ import java.awt.Component;
 import javax.swing.Box;
 
 public class VentanaPrincipal {
-
+	private static VentanaPrincipal unicaInstancia;
 	private JFrame frmPrincipal;
 	private JPanel pnlPrincipal;
+	private JLabel lblLogin;
+	
+	public static VentanaPrincipal getUnicaInstancia() {
+		if (unicaInstancia == null)
+			unicaInstancia = new VentanaPrincipal();
+		return unicaInstancia;
+	}
 
 	/**
 	 * Create the application.
 	 */
-	public VentanaPrincipal() {
+	private VentanaPrincipal() {
 		initialize();
 	}
 	
@@ -72,9 +81,9 @@ public class VentanaPrincipal {
 		lblAppvideo.setFont(new Font("L M Mono10", Font.BOLD, 30));
 		lblAppvideo.setHorizontalAlignment(SwingConstants.LEFT);
 		
-		JLabel lblIniciaSesinO = new JLabel("Inicia Sesión o Registrate");
-		pnlSesion.add(lblIniciaSesinO, BorderLayout.CENTER);
-		lblIniciaSesinO.setHorizontalAlignment(SwingConstants.CENTER);
+		lblLogin = new JLabel("Inicia Sesión o Registrate");
+		pnlSesion.add(lblLogin, BorderLayout.CENTER);
+		lblLogin.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JPanel pnlCuenta = new JPanel();
 		pnlSesion.add(pnlCuenta, BorderLayout.EAST);
@@ -116,10 +125,12 @@ public class VentanaPrincipal {
 		JButton btnMisListas = new JButton("Mis Listas");
 		btnMisListas.setBackground(Color.ORANGE);
 		pnlMenu.add(btnMisListas);
+		addManejadorBotonMisListas(btnMisListas);
 		
 		JButton btnRecientes = new JButton("Recientes");
 		btnRecientes.setBackground(Color.ORANGE);
 		pnlMenu.add(btnRecientes);
+		addManejadorBotonRecientes(btnRecientes);
 		
 		JButton btnNuevaLista = new JButton("Nueva Lista");
 		btnNuevaLista.setBackground(Color.ORANGE);
@@ -129,26 +140,18 @@ public class VentanaPrincipal {
 		JButton btnPopulares = new JButton("Populares");
 		btnPopulares.setBackground(Color.ORANGE);
 		pnlMenu.add(btnPopulares);
+		addManejadorBotonPopulares(btnPopulares);
 		
 		pnlPrincipal = new JPanel();
 		frmPrincipal.getContentPane().add(pnlPrincipal, BorderLayout.CENTER);
-		//frmPrincipal.getContentPane().add(PanelLogin.getUnicaInstancia(), BorderLayout.CENTER);
+		cambiarPanel(PanelLogin.getUnicaInstancia());
 	}
 	
 	private void addManejadorBotonLogin(JButton btnLogin) {
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				pnlPrincipal.removeAll();
 				pnlPrincipal.setLayout(new FlowLayout());
-				pnlPrincipal.add(PanelLogin.getUnicaInstancia());
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
-				/*frmPrincipal.remove(((BorderLayout)(frmPrincipal.getContentPane().getLayout())).getLayoutComponent(BorderLayout.CENTER));
-				frmPrincipal.getContentPane().add(PanelLogin.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				frmPrincipal.getContentPane().revalidate();
-				frmPrincipal.getContentPane().repaint();*/
+				cambiarPanel(PanelLogin.getUnicaInstancia());
 			}
 		});
 	}
@@ -156,18 +159,8 @@ public class VentanaPrincipal {
 	private void addManejadorBotonRegistro(JButton btnReg) {
 		btnReg.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				pnlPrincipal.removeAll();
 				pnlPrincipal.setLayout(new FlowLayout());
-				pnlPrincipal.add(PanelRegistro.getUnicaInstancia());
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
-				
-				/*frmPrincipal.remove(((BorderLayout)(frmPrincipal.getContentPane().getLayout())).getLayoutComponent(BorderLayout.CENTER));
-				frmPrincipal.getContentPane().add(PanelRegistro.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				frmPrincipal.getContentPane().revalidate();
-				frmPrincipal.getContentPane().repaint();*/
+				cambiarPanel(PanelRegistro.getUnicaInstancia());
 			}
 		});
 	}
@@ -175,9 +168,19 @@ public class VentanaPrincipal {
 	private void addManejadorBotonLogout(JButton btnLogout) {
 		btnLogout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				//Controlador.getUnicaInstancia().logOut()
-				JOptionPane.showMessageDialog(frmPrincipal, "Sesión cerrada correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					boolean logout = Controlador.getUnicaInstancia().logoutUsuario();
+					if (logout) {
+						JOptionPane.showMessageDialog(frmPrincipal, "Sesión cerrada correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+						pnlPrincipal.setLayout(new FlowLayout());
+						cambiarPanel(PanelLogin.getUnicaInstancia());
+						lblLogin.setText("Inicia Sesión o Registrate");
+					} else {
+						JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Se ha producido un error\nInténtelo de nuevo", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
 			}
 		});
 	}
@@ -185,7 +188,10 @@ public class VentanaPrincipal {
 	private void addManejadorBotonPremium(JButton btnPremium) {
 		btnPremium.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+				}
 			}
 		});
 	}
@@ -193,13 +199,12 @@ public class VentanaPrincipal {
 	private void addManejadorBotonExplorar(JButton btnExplorar) {
 		btnExplorar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				pnlPrincipal.removeAll();
-				pnlPrincipal.setLayout(new BorderLayout());
-				pnlPrincipal.add(PanelExplorar.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					pnlPrincipal.setLayout(new BorderLayout());
+					cambiarPanel(PanelExplorar.getUnicaInstancia());
+				}
 			}
 		});
 	}
@@ -207,13 +212,12 @@ public class VentanaPrincipal {
 	private void addManejadorBotonMisListas(JButton btnMisListas) {
 		btnMisListas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				pnlPrincipal.removeAll();
-				pnlPrincipal.setLayout(new BorderLayout());
-				pnlPrincipal.add(PanelMisListas.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					pnlPrincipal.setLayout(new BorderLayout());
+					cambiarPanel(PanelMisListas.getUnicaInstancia());
+				}
 			}
 		});
 	}
@@ -221,13 +225,12 @@ public class VentanaPrincipal {
 	private void addManejadorBotonRecientes(JButton btnRecientes) {
 		btnRecientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				pnlPrincipal.removeAll();
-				pnlPrincipal.setLayout(new BorderLayout());
-				pnlPrincipal.add(PanelRecientes.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					pnlPrincipal.setLayout(new BorderLayout());
+					cambiarPanel(PanelRecientes.getUnicaInstancia());
+				}
 			}
 		});
 	}
@@ -235,13 +238,12 @@ public class VentanaPrincipal {
 	private void addManejadorBotonNuevaLista(JButton btnNuevaLista) {
 		btnNuevaLista.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				pnlPrincipal.removeAll();
-				pnlPrincipal.setLayout(new BorderLayout());
-				pnlPrincipal.add(PanelNuevaLista.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					pnlPrincipal.setLayout(new BorderLayout());
+					cambiarPanel(PanelNuevaLista.getUnicaInstancia());
+				}
 			}
 		});
 	}
@@ -249,15 +251,28 @@ public class VentanaPrincipal {
 	private void addManejadorBotonPopulares(JButton btnPopulares) {
 		btnPopulares.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				pnlPrincipal.removeAll();
-				pnlPrincipal.setLayout(new BorderLayout());
-				pnlPrincipal.add(PanelPopulares.getUnicaInstancia(), BorderLayout.CENTER);
-				
-				pnlPrincipal.revalidate();
-				pnlPrincipal.repaint();
+				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
+					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					pnlPrincipal.setLayout(new BorderLayout());
+					cambiarPanel(PanelPopulares.getUnicaInstancia());
+				}
 			}
 		});
+	}
+	
+	public void cambiarPanel(JPanel panel) {
+		pnlPrincipal.removeAll();
+		pnlPrincipal.add(panel);
+		pnlPrincipal.revalidate();
+		pnlPrincipal.repaint();
+	}
+
+	public void loginRealizado() {
+		JOptionPane.showMessageDialog(frmPrincipal, "Sesión iniciada correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+		pnlPrincipal.setLayout(new BorderLayout());
+		cambiarPanel(PanelRecientes.getUnicaInstancia());
+		lblLogin.setText("Bienvenido/a " + Controlador.getUnicaInstancia().getNombreUsuario());
 	}
 
 }
