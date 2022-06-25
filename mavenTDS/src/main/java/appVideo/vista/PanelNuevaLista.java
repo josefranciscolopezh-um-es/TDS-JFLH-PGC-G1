@@ -5,30 +5,43 @@ import java.awt.BorderLayout;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
+
+import appVideo.controlador.Controlador;
+import appVideo.dominio.Video;
+
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
 import javax.swing.JButton;
-import java.awt.FlowLayout;
-import javax.swing.border.TitledBorder;
 import javax.swing.BoxLayout;
 import java.awt.Component;
-import javax.swing.JScrollPane;
-import javax.swing.JList;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.JScrollPane;
+import java.awt.FlowLayout;
+
+@SuppressWarnings("serial")
 public class PanelNuevaLista extends JPanel {
 	private static PanelNuevaLista unicaInstancia;
-	private JTextField textField;
+	private JTextField txtTitulo;
+	private JPanel pnlResultados;
 	private JTextField txtNombreLista;
+	private JPanel pnlContenido;
+	
+	private String listaActual;
+	private String videoSeleccionado;
+	private List<Video> videosLista;
 	
 	public static PanelNuevaLista getUnicaInstancia() {
 		if (unicaInstancia == null)
 			unicaInstancia = new PanelNuevaLista();
 		return unicaInstancia;
 	}
+	
 	/**
 	 * Create the panel.
 	 */
@@ -50,26 +63,27 @@ public class PanelNuevaLista extends JPanel {
 		lblBuscarTitulo.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlBotones.add(lblBuscarTitulo, BorderLayout.WEST);
 		
-		textField = new JTextField();
-		textField.setColumns(20);
-		pnlBotones.add(textField, BorderLayout.CENTER);
+		txtTitulo = new JTextField();
+		txtTitulo.setColumns(20);
+		pnlBotones.add(txtTitulo, BorderLayout.CENTER);
 		
 		JButton btnBuscar = new JButton("Buscar");
 		pnlBotones.add(btnBuscar, BorderLayout.EAST);
 		
+		addManejadorBotonBuscarVideos(btnBuscar);
+		
 		JButton btnLimpiarResultados = new JButton("Limpiar Resultados");
 		pnlBotones.add(btnLimpiarResultados, BorderLayout.SOUTH);
 		
-		JPanel pnlResultados = new JPanel();
+		addManejadorBotonLimpiar(btnLimpiarResultados);
+		
+		JScrollPane scrollResultados = new JScrollPane();
+		pnlBusqueda.add(scrollResultados, BorderLayout.CENTER);
+		
+		pnlResultados = new JPanel();
+		scrollResultados.setViewportView(pnlResultados);
 		pnlResultados.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
-		pnlBusqueda.add(pnlResultados, BorderLayout.CENTER);
-		pnlResultados.setLayout(new BoxLayout(pnlResultados, BoxLayout.Y_AXIS));
-		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		pnlResultados.add(scrollPane_1);
-		
-		JList list_1 = new JList();
-		scrollPane_1.setViewportView(list_1);
+		pnlResultados.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JPanel pnlLista = new JPanel();
 		add(pnlLista, BorderLayout.WEST);
@@ -95,37 +109,208 @@ public class PanelNuevaLista extends JPanel {
 		JButton btnBuscarLista = new JButton("Buscar");
 		pnlBusquedaNombre.add(btnBuscarLista);
 		
-		JButton btnEliminar = new JButton("Eliminar");
-		btnEliminar.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlNombre.add(btnEliminar);
+		addManejadorBotonBuscarLista(btnBuscarLista);
 		
-		JPanel pnlContenido = new JPanel();
+		JButton btnEliminarLista = new JButton("Eliminar Lista");
+		btnEliminarLista.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlNombre.add(btnEliminarLista);
+		
+		addManejadorBotonEliminarLista(btnEliminarLista);
+		
+		JScrollPane scrollContenido = new JScrollPane();
+		pnlLista.add(scrollContenido, BorderLayout.CENTER);
+		
+		pnlContenido = new JPanel();
+		scrollContenido.setViewportView(pnlContenido);
 		pnlContenido.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
-		pnlLista.add(pnlContenido, BorderLayout.CENTER);
 		pnlContenido.setLayout(new BoxLayout(pnlContenido, BoxLayout.Y_AXIS));
 		
-		JScrollPane scrollPane = new JScrollPane();
-		pnlContenido.add(scrollPane);
-		
-		JList list = new JList();
-		scrollPane.setViewportView(list);
-		
 		JPanel pnlBotonesLista = new JPanel();
-		pnlBotonesLista.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 30, 5, 30)));
+		pnlBotonesLista.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
 		pnlLista.add(pnlBotonesLista, BorderLayout.SOUTH);
-		pnlBotonesLista.setLayout(new BorderLayout(10, 10));
+		pnlBotonesLista.setLayout(new BoxLayout(pnlBotonesLista, BoxLayout.X_AXIS));
 		
-		JButton btnAadir = new JButton("Añadir");
-		btnAadir.setHorizontalAlignment(SwingConstants.RIGHT);
-		pnlBotonesLista.add(btnAadir, BorderLayout.WEST);
+		JButton btnQuitar = new JButton("Quitar Video");
+		pnlBotonesLista.add(btnQuitar);
 		
-		JButton btnQuitar = new JButton("Quitar");
-		btnQuitar.setHorizontalAlignment(SwingConstants.LEFT);
-		pnlBotonesLista.add(btnQuitar, BorderLayout.EAST);
+		addManejadorBotonQuitarVideo(btnQuitar);
 		
-		JButton btnAceptar = new JButton("Aceptar");
-		pnlBotonesLista.add(btnAceptar, BorderLayout.SOUTH);
+		JButton btnGuardar = new JButton("Guardar Lista");
+		pnlBotonesLista.add(btnGuardar);
+		
+		addManejadorBotonGuardar(btnGuardar);
 
+	}
+
+	private void addManejadorBotonBuscarVideos(JButton btnBuscar) {
+		btnBuscar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buscarVideos();
+			}
+		});
+	}
+
+	private void addManejadorBotonBuscarLista(JButton btnBuscarLista) {
+		btnBuscarLista.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (txtNombreLista.getText().equals("")) {
+					JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "Introduzca el nombre de la lista", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				clearListaVideos();
+				videosLista = Controlador.getUnicaInstancia().getVideosLista(txtNombreLista.getText());
+				
+				if (videosLista == null) {
+					int respuesta = JOptionPane.showConfirmDialog(PanelNuevaLista.getUnicaInstancia(), "Lista no encontrada. ¿Desea crearla?", "Aviso", JOptionPane.YES_NO_OPTION);
+
+					if (respuesta == JOptionPane.YES_OPTION)
+						videosLista = new ArrayList<Video>();
+					else {
+						txtNombreLista.setText("");
+						return;
+					}
+				}
+				listaActual = txtNombreLista.getText();
+			}
+		});
+	}
+	
+	private void addManejadorBotonLimpiar(JButton btnLimpiar) {
+		btnLimpiar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clearResultados();
+			}
+		});
+	}
+
+	private void addManejadorBotonEliminarLista(JButton btnEliminarLista) {
+		btnEliminarLista.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (listaActual == null) {
+					JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "No hay ninguna lista seleccionada", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				Controlador.getUnicaInstancia().removeLista(listaActual);
+				
+				JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "Lista '" + listaActual + "' eliminada", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+				
+				txtNombreLista.setText("");
+				clearListaVideos();
+			}
+		});
+	}
+
+	private void addManejadorBotonQuitarVideo(JButton btnQuitar) {
+		btnQuitar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (videoSeleccionado != null) {
+					videosLista.remove(Controlador.getUnicaInstancia().getVideoPorTitulo(videoSeleccionado));
+					
+					for (Component btnVideo : pnlContenido.getComponents()) {
+						if (((JButton)btnVideo).getText().equals(videoSeleccionado)) {
+							pnlContenido.remove(btnVideo);
+							videoSeleccionado = null;
+							return;
+						}
+					}
+				}
+			}
+		});
+	}
+
+	private void addManejadorBotonGuardar(JButton btnGuardar) {
+		btnGuardar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (listaActual == null) {
+					JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "No hay ninguna lista seleccionada", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				Controlador.getUnicaInstancia().guardarLista(listaActual, videosLista);
+				
+				JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "Lista '" + listaActual + "' guardada", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+	}
+	
+	private void buscarVideos() {
+		pnlResultados.removeAll();
+
+		String titulo = txtTitulo.getText().trim();
+		List<Video> videos = Controlador.getUnicaInstancia().buscarVideo(titulo);
+
+		for (Video v : videos) {
+			JButton boton = crearBotonVideoBusqueda(v);
+			pnlResultados.add(boton);
+		}
+
+		pnlResultados.revalidate();
+		pnlResultados.repaint();
+		txtTitulo.setText("");
+	}
+	
+	private JButton crearBotonVideoBusqueda(Video video) {
+		JButton boton = new JButton(video.getTitulo());
+		boton.setActionCommand(video.getTitulo());
+		boton.setIcon(PanelReproductor.getUnicaInstancia().getVideoWeb().getSmallThumb(video.getUrl()));
+		
+		boton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (listaActual == null) {
+					JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "Seleccione una lista a la que añadir el video primero", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					addVideoToLista(e.getActionCommand());
+				}
+			}
+		});
+		
+		return boton;
+	}
+	
+	private void addVideoToLista(String titulo) {
+		Video video = Controlador.getUnicaInstancia().getVideoPorTitulo(titulo);
+		videosLista.add(video);
+		
+		JButton boton = crearBotonVideoLista(video);
+		pnlContenido.add(boton);
+	}
+	
+	private JButton crearBotonVideoLista(Video video) {
+		JButton boton = new JButton(video.getTitulo());
+		boton.setActionCommand(video.getTitulo());
+		boton.setIcon(PanelReproductor.getUnicaInstancia().getVideoWeb().getSmallThumb(video.getUrl()));
+		
+		boton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				videoSeleccionado = e.getActionCommand();
+			}
+		});
+		
+		return boton;
+	}
+	
+	private void clearResultados() {
+		pnlResultados.removeAll();
+		pnlResultados.revalidate();
+		pnlResultados.repaint();
+	}
+	
+	private void clearListaVideos() {
+		listaActual = null;
+		videoSeleccionado = null;
+		videosLista = null;
+		pnlContenido.removeAll();
+		pnlContenido.revalidate();
+		pnlContenido.repaint();
+	}
+	
+	public void reload() {
+		txtTitulo.setText("");
+		txtNombreLista.setText("");
+		clearResultados();
+		clearListaVideos();
 	}
 
 }

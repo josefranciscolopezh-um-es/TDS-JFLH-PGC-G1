@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -17,14 +16,13 @@ import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JButton;
-import java.awt.Component;
-import java.awt.FlowLayout;
 
 import appVideo.controlador.Controlador;
 
+@SuppressWarnings("serial")
 public class PanelLogin extends JPanel {
 	private static PanelLogin unicaInstancia;
-	private JTextField txtUsuario;
+	private JTextField txtLogin;
 	private JPasswordField txtPassword;
 	
 	public static PanelLogin getUnicaInstancia() {
@@ -52,10 +50,10 @@ public class PanelLogin extends JPanel {
 		lblUsuario.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlUsuario.add(lblUsuario, BorderLayout.CENTER);
 		
-		txtUsuario = new JTextField();
-		txtUsuario.setHorizontalAlignment(SwingConstants.CENTER);
-		pnlUsuario.add(txtUsuario, BorderLayout.EAST);
-		txtUsuario.setColumns(15);
+		txtLogin = new JTextField();
+		txtLogin.setHorizontalAlignment(SwingConstants.CENTER);
+		pnlUsuario.add(txtLogin, BorderLayout.EAST);
+		txtLogin.setColumns(15);
 		
 		JPanel pnlContrasea = new JPanel();
 		pnlCampos.add(pnlContrasea);
@@ -76,21 +74,45 @@ public class PanelLogin extends JPanel {
 		
 		JButton btnLogin = new JButton("Iniciar Sesión");
 		pnlBotones.add(btnLogin);
+		
+		addManejadorBotonLogin(btnLogin);
 
 	}
 	
 	private void addManejadorBotonLogin(JButton btnLogin) {
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				boolean login = Controlador.getUnicaInstancia().loginUsuario(txtUsuario.getText(),
-						new String(txtPassword.getPassword()));
-
-				if (login) {
-					VentanaPrincipal.getUnicaInstancia().loginRealizado();
-				} else
-					JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Nombre de usuario o contraseña no válido",
-							"Error", JOptionPane.ERROR_MESSAGE);
+				if (checkFields()) {
+					boolean login = Controlador.getUnicaInstancia().loginUsuario(txtLogin.getText(),
+							new String(txtPassword.getPassword()));
+	
+					if (login) {
+						clearFields();
+						VentanaPrincipal.getUnicaInstancia().loginRealizado();
+					} else
+						JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Nombre de usuario o contraseña incorrecto",
+								"Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
+	}
+	
+	private boolean checkFields() {
+		String password = new String(txtPassword.getPassword());
+		
+		// Comprobar que se hayan rellenado todos los campos obligatorios
+		if (txtLogin.getText().trim().isEmpty() || password.isEmpty()) {
+			JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Se deben rellenar todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		else return true;
+	}
+	
+	private void clearFields() {
+		// Limpia todos los campos de texto
+		
+		txtLogin.setText("");
+		txtPassword.setText("");
 	}
 }

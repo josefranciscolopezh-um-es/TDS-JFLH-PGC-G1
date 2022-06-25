@@ -3,10 +3,14 @@ package appVideo.vista;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import javax.swing.JLabel;
-import java.awt.Font;
+import javax.swing.JOptionPane;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-
 import javax.swing.BoxLayout;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
@@ -14,19 +18,23 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Component;
 import com.toedter.calendar.JDateChooser;
+
+import appVideo.controlador.Controlador;
+
 import java.awt.Dimension;
 
+@SuppressWarnings("serial")
 public class PanelRegistro extends JPanel {
 	private static PanelRegistro unicaInstancia;
 	private JTextField txtNombre;
 	private JTextField txtApellidos;
+	private JDateChooser fechaNacimiento;
 	private JTextField txtEmail;
-	private JTextField txtUsuario;
-	private JPasswordField txtContrasea;
-	private JPasswordField txtConfirmar;
+	private JTextField txtLogin;
+	private JPasswordField txtPassword;
+	private JPasswordField txtPasswordChk;
 	
 	public static PanelRegistro getUnicaInstancia() {
 		if (unicaInstancia == null)
@@ -82,7 +90,7 @@ public class PanelRegistro extends JPanel {
 		lblNacimiento.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlNacimiento.add(lblNacimiento, BorderLayout.CENTER);
 		
-		JDateChooser fechaNacimiento = new JDateChooser();
+		fechaNacimiento = new JDateChooser();
 		fechaNacimiento.setPreferredSize(new Dimension(130, 19));
 		fechaNacimiento.setDateFormatString("dd/MM/yyyy");
 		pnlNacimiento.add(fechaNacimiento, BorderLayout.EAST);
@@ -112,33 +120,33 @@ public class PanelRegistro extends JPanel {
 		lblUsuario.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlUsuario.add(lblUsuario, BorderLayout.CENTER);
 		
-		txtUsuario = new JTextField();
-		pnlUsuario.add(txtUsuario, BorderLayout.EAST);
-		txtUsuario.setColumns(15);
+		txtLogin = new JTextField();
+		pnlUsuario.add(txtLogin, BorderLayout.EAST);
+		txtLogin.setColumns(15);
 		
-		JPanel pnlContraseña = new JPanel();
-		pnlCredenciales.add(pnlContraseña);
-		pnlContraseña.setLayout(new BorderLayout(0, 0));
+		JPanel pnlPassword = new JPanel();
+		pnlCredenciales.add(pnlPassword);
+		pnlPassword.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblContrasea = new JLabel("* Contraseña: ");
-		lblContrasea.setHorizontalAlignment(SwingConstants.RIGHT);
-		pnlContraseña.add(lblContrasea, BorderLayout.CENTER);
+		JLabel lblPassword = new JLabel("* Contraseña: ");
+		lblPassword.setHorizontalAlignment(SwingConstants.RIGHT);
+		pnlPassword.add(lblPassword, BorderLayout.CENTER);
 		
-		txtContrasea = new JPasswordField();
-		txtContrasea.setColumns(15);
-		pnlContraseña.add(txtContrasea, BorderLayout.EAST);
+		txtPassword = new JPasswordField();
+		txtPassword.setColumns(15);
+		pnlPassword.add(txtPassword, BorderLayout.EAST);
 		
-		JPanel pnlConfirmar = new JPanel();
-		pnlCredenciales.add(pnlConfirmar);
-		pnlConfirmar.setLayout(new BorderLayout(0, 0));
+		JPanel pnlPasswordChk = new JPanel();
+		pnlCredenciales.add(pnlPasswordChk);
+		pnlPasswordChk.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblConfirmar = new JLabel("* Confirmar Contraseña: ");
-		lblConfirmar.setHorizontalAlignment(SwingConstants.RIGHT);
-		pnlConfirmar.add(lblConfirmar, BorderLayout.CENTER);
+		JLabel lblPasswordChk = new JLabel("* PasswordChk Contraseña: ");
+		lblPasswordChk.setHorizontalAlignment(SwingConstants.RIGHT);
+		pnlPasswordChk.add(lblPasswordChk, BorderLayout.CENTER);
 		
-		txtConfirmar = new JPasswordField();
-		txtConfirmar.setColumns(15);
-		pnlConfirmar.add(txtConfirmar, BorderLayout.EAST);
+		txtPasswordChk = new JPasswordField();
+		txtPasswordChk.setColumns(15);
+		pnlPasswordChk.add(txtPasswordChk, BorderLayout.EAST);
 		
 		JPanel pnlBotones = new JPanel();
 		pnlBotones.setBorder(new EmptyBorder(5, 0, 5, 0));
@@ -153,7 +161,65 @@ public class PanelRegistro extends JPanel {
 		lblAviso.setHorizontalAlignment(SwingConstants.LEFT);
 		lblAviso.setAlignmentX(Component.CENTER_ALIGNMENT);
 		pnlBotones.add(lblAviso);
+		
+		crearManejadorBotonRegistro(btnRegistro);
 
 	}
+	
+	private void crearManejadorBotonRegistro(JButton btnRegistro) {
+		btnRegistro.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (checkFields()) {
+					boolean registrado = false;
+					registrado = Controlador.getUnicaInstancia().registrarUsuario(txtNombre.getText(),
+							txtApellidos.getText(), txtEmail.getText(), txtLogin.getText(),
+							new String(txtPassword.getPassword()), 
+							Controlador.getUnicaInstancia().getFormatoFecha().format(fechaNacimiento.getDate()));
+					if (registrado) {
+						clearFields();
+						VentanaPrincipal.getUnicaInstancia().registroRealizado();
+					} else {
+						JOptionPane.showMessageDialog(PanelRegistro.getUnicaInstancia(), "No se ha podido llevar a cabo el registro",
+								"Registro", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+	}
 
+	private boolean checkFields() {
+		String password = new String(txtPassword.getPassword());
+		String passwordChk = new String(txtPasswordChk.getPassword());
+		
+		// Comprobar que se hayan rellenado todos los campos obligatorios
+		if (txtNombre.getText().trim().isEmpty() || fechaNacimiento.getDate() == null || txtLogin.getText().trim().isEmpty() || password.isEmpty() || passwordChk.isEmpty()) {
+			JOptionPane.showMessageDialog(PanelRegistro.getUnicaInstancia(), "Se deben rellenar todos los campos con un asterisco", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		// Comprobar que las contraseñas son iguales
+		else if (!password.equals(passwordChk)) {
+			JOptionPane.showMessageDialog(PanelRegistro.getUnicaInstancia(), "Las contraseñas introducidas no coinciden", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		// Comprobar que no exista otro usuario con igual login
+		else if (Controlador.getUnicaInstancia().esUsuarioRegistrado(txtLogin.getText())) {
+			JOptionPane.showMessageDialog(PanelRegistro.getUnicaInstancia(), "Ese nombre de usuario ya está en uso", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		else return true;
+	}
+	
+	private void clearFields() {
+		// Limpia todos los campos de texto
+		
+		txtNombre.setText("");
+		txtApellidos.setText("");
+		fechaNacimiento.setDate(new Date());
+		txtEmail.setText("");
+		txtLogin.setText("");
+		txtPassword.setText("");
+		txtPasswordChk.setText("");
+	}
 }

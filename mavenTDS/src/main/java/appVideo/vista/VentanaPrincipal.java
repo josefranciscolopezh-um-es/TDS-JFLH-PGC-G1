@@ -1,7 +1,5 @@
 package appVideo.vista;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -13,7 +11,6 @@ import javax.swing.BoxLayout;
 import javax.swing.border.SoftBevelBorder;
 
 import appVideo.controlador.Controlador;
-
 import javax.swing.border.BevelBorder;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -24,7 +21,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.UIManager;
 import java.awt.Dimension;
-import javax.swing.border.LineBorder;
 import javax.swing.border.EtchedBorder;
 import java.awt.Component;
 import javax.swing.Box;
@@ -34,6 +30,9 @@ public class VentanaPrincipal {
 	private JFrame frmPrincipal;
 	private JPanel pnlPrincipal;
 	private JLabel lblLogin;
+	private JButton btnPopulares;
+	private JButton btnFiltros;
+	private JButton btnPdf;
 	
 	public static VentanaPrincipal getUnicaInstancia() {
 		if (unicaInstancia == null)
@@ -137,16 +136,29 @@ public class VentanaPrincipal {
 		pnlMenu.add(btnNuevaLista);
 		addManejadorBotonNuevaLista(btnNuevaLista);
 		
-		JButton btnPopulares = new JButton("Populares");
+		btnPopulares = new JButton("Populares");
 		btnPopulares.setBackground(Color.ORANGE);
 		pnlMenu.add(btnPopulares);
 		addManejadorBotonPopulares(btnPopulares);
+		btnPopulares.setVisible(false);
+		
+		btnFiltros = new JButton("Filtros");
+		btnFiltros.setBackground(Color.ORANGE);
+		pnlMenu.add(btnFiltros);
+		addManejadorBotonFiltros(btnFiltros);
+		btnFiltros.setVisible(false);
+		
+		btnPdf = new JButton("Generar PDF");
+		btnPdf.setBackground(Color.ORANGE);
+		pnlMenu.add(btnPdf);
+		addManejadorBotonPdf(btnPdf);
+		btnPdf.setVisible(false);
 		
 		pnlPrincipal = new JPanel();
 		frmPrincipal.getContentPane().add(pnlPrincipal, BorderLayout.CENTER);
 		cambiarPanel(PanelLogin.getUnicaInstancia());
 	}
-	
+
 	private void addManejadorBotonLogin(JButton btnLogin) {
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -173,12 +185,9 @@ public class VentanaPrincipal {
 				} else {
 					boolean logout = Controlador.getUnicaInstancia().logoutUsuario();
 					if (logout) {
-						JOptionPane.showMessageDialog(frmPrincipal, "Sesión cerrada correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
-						pnlPrincipal.setLayout(new FlowLayout());
-						cambiarPanel(PanelLogin.getUnicaInstancia());
-						lblLogin.setText("Inicia Sesión o Registrate");
+						logoutRealizado();
 					} else {
-						JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Se ha producido un error\nInténtelo de nuevo", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Se ha producido un error al intentar cerrar sesión", "Error", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -191,6 +200,37 @@ public class VentanaPrincipal {
 				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
 					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
+					int respuesta;
+					if (Controlador.getUnicaInstancia().isUsuarioPremium()) {
+						respuesta = JOptionPane.showConfirmDialog(PanelNuevaLista.getUnicaInstancia(), "Actualmente su cuenta es Premium. ¿Desea dejar de serlo?", "Aviso", JOptionPane.YES_NO_OPTION);
+
+						if (respuesta == JOptionPane.YES_OPTION) {
+							Controlador.getUnicaInstancia().removeUsuarioPremium();
+							
+							btnPopulares.setVisible(false);
+							btnFiltros.setVisible(false);
+							btnPdf.setVisible(false);
+							frmPrincipal.repaint();
+							
+							pnlPrincipal.setLayout(new BorderLayout());
+							cambiarPanel(PanelRecientes.getUnicaInstancia());
+							
+							JOptionPane.showMessageDialog(frmPrincipal, "Ya no es usuario Premium", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+						}
+					} else {
+						respuesta = JOptionPane.showConfirmDialog(PanelNuevaLista.getUnicaInstancia(), "Actualmente su cuenta no es Premium. ¿Desea serlo?", "Aviso", JOptionPane.YES_NO_OPTION);
+						
+						if (respuesta == JOptionPane.YES_OPTION) {
+							Controlador.getUnicaInstancia().setUsuarioPremium();
+							
+							btnPopulares.setVisible(true);
+							btnFiltros.setVisible(true);
+							btnPdf.setVisible(true);
+							frmPrincipal.repaint();
+							
+							JOptionPane.showMessageDialog(frmPrincipal, "Es ahora usuario Premium", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+						}
+					}
 				}
 			}
 		});
@@ -202,6 +242,7 @@ public class VentanaPrincipal {
 				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
 					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
+					PanelExplorar.getUnicaInstancia().reload();
 					pnlPrincipal.setLayout(new BorderLayout());
 					cambiarPanel(PanelExplorar.getUnicaInstancia());
 				}
@@ -215,6 +256,7 @@ public class VentanaPrincipal {
 				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
 					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
+					PanelMisListas.getUnicaInstancia().reload();
 					pnlPrincipal.setLayout(new BorderLayout());
 					cambiarPanel(PanelMisListas.getUnicaInstancia());
 				}
@@ -228,6 +270,7 @@ public class VentanaPrincipal {
 				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
 					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
+					PanelRecientes.getUnicaInstancia().reload();
 					pnlPrincipal.setLayout(new BorderLayout());
 					cambiarPanel(PanelRecientes.getUnicaInstancia());
 				}
@@ -241,6 +284,7 @@ public class VentanaPrincipal {
 				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
 					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
+					PanelNuevaLista.getUnicaInstancia().reload();
 					pnlPrincipal.setLayout(new BorderLayout());
 					cambiarPanel(PanelNuevaLista.getUnicaInstancia());
 				}
@@ -251,17 +295,38 @@ public class VentanaPrincipal {
 	private void addManejadorBotonPopulares(JButton btnPopulares) {
 		btnPopulares.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (Controlador.getUnicaInstancia().getUsuarioActual() == null) {
-					JOptionPane.showMessageDialog(frmPrincipal, "No hay ninguna sesión iniciada", "Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					pnlPrincipal.setLayout(new BorderLayout());
-					cambiarPanel(PanelPopulares.getUnicaInstancia());
+				PanelPopulares.getUnicaInstancia().reload();
+				pnlPrincipal.setLayout(new BorderLayout());
+				cambiarPanel(PanelPopulares.getUnicaInstancia());
+			}
+		});
+	}
+	
+	private void addManejadorBotonFiltros(JButton btnFiltros) {
+		btnFiltros.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				PanelFiltros.getUnicaInstancia().reload();
+				pnlPrincipal.setLayout(new FlowLayout());
+				cambiarPanel(PanelFiltros.getUnicaInstancia());
+			}
+		});
+	}
+	
+	private void addManejadorBotonPdf(JButton btnPdf) {
+		btnPdf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int respuesta = JOptionPane.showConfirmDialog(PanelNuevaLista.getUnicaInstancia(), "¿Desea generar un PDF con sus listas de videos?", "Aviso", JOptionPane.YES_NO_OPTION);
+				
+				if (respuesta == JOptionPane.YES_OPTION) {
+				// Generar PDF con listas de videos del usuario
 				}
 			}
 		});
 	}
 	
-	public void cambiarPanel(JPanel panel) {
+	private void cambiarPanel(JPanel panel) {
+		// Cambia el panel principal de la ventana
+		
 		pnlPrincipal.removeAll();
 		pnlPrincipal.add(panel);
 		pnlPrincipal.revalidate();
@@ -270,9 +335,40 @@ public class VentanaPrincipal {
 
 	public void loginRealizado() {
 		JOptionPane.showMessageDialog(frmPrincipal, "Sesión iniciada correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+
+		PanelRecientes.getUnicaInstancia().reload();
 		pnlPrincipal.setLayout(new BorderLayout());
 		cambiarPanel(PanelRecientes.getUnicaInstancia());
+		
 		lblLogin.setText("Bienvenido/a " + Controlador.getUnicaInstancia().getNombreUsuario());
+		
+		if (Controlador.getUnicaInstancia().isUsuarioPremium()) {
+			btnPopulares.setVisible(true);
+			btnFiltros.setVisible(true);
+			btnPdf.setVisible(true);
+			frmPrincipal.repaint();
+		}
 	}
-
+	
+	public void registroRealizado() {
+		JOptionPane.showMessageDialog(frmPrincipal, "Usuario registrado correctamente", "Registro",
+				JOptionPane.INFORMATION_MESSAGE);
+		
+		cambiarPanel(PanelLogin.getUnicaInstancia());
+	}
+	
+	private void logoutRealizado() {
+		btnPopulares.setVisible(false);
+		btnFiltros.setVisible(false);
+		btnPdf.setVisible(false);
+		frmPrincipal.repaint();
+		
+		JOptionPane.showMessageDialog(frmPrincipal, "Sesión cerrada correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+		
+		pnlPrincipal.setLayout(new FlowLayout());
+		cambiarPanel(PanelLogin.getUnicaInstancia());
+		
+		lblLogin.setText("Inicia Sesión o Registrate");
+	}
+	
 }

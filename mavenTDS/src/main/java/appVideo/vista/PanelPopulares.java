@@ -2,28 +2,34 @@ package appVideo.vista;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import appVideo.controlador.Controlador;
+import appVideo.dominio.Video;
+
+@SuppressWarnings("serial")
 public class PanelPopulares extends JPanel {
 	private static PanelPopulares unicaInstancia;
-	private JTextField txtNuevaEtiqueta;
+	
+	private JPanel pnlVideos;
+	private JPanel pnlVideo;
 	
 	public static PanelPopulares getUnicaInstancia() {
 		if (unicaInstancia == null)
 			unicaInstancia = new PanelPopulares();
 		return unicaInstancia;
 	}
+	
 	/**
 	 * Create the panel.
 	 */
@@ -36,57 +42,57 @@ public class PanelPopulares extends JPanel {
 		add(pnlSeleccion, BorderLayout.WEST);
 		pnlSeleccion.setLayout(new BorderLayout(0, 10));
 		
-		JPanel pnlSeleccionLista = new JPanel();
-		pnlSeleccionLista.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
-		pnlSeleccion.add(pnlSeleccionLista, BorderLayout.NORTH);
-		pnlSeleccionLista.setLayout(new GridLayout(2, 1, 5, 5));
+		JScrollPane scrollVideos = new JScrollPane();
+		pnlSeleccion.add(scrollVideos, BorderLayout.CENTER);
 		
-		JLabel lblPopulares = new JLabel("Videos más reproducidos: ");
+		pnlVideos = new JPanel();
+		scrollVideos.setViewportView(pnlVideos);
+		pnlVideos.setLayout(new BoxLayout(pnlVideos, BoxLayout.Y_AXIS));
+		
+		JLabel lblPopulares = new JLabel("Top " + Controlador.NUM_POPULARES + " Videos más vistos:");
+		lblPopulares.setBorder(new EmptyBorder(10, 5, 10, 5));
+		pnlSeleccion.add(lblPopulares, BorderLayout.NORTH);
 		lblPopulares.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlSeleccionLista.add(lblPopulares);
 		
-		JButton btnReproducir = new JButton("Reproducir");
-		btnReproducir.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlSeleccionLista.add(btnReproducir);
-		
-		JButton btnCancelar = new JButton("Cancelar");
-		btnCancelar.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlSeleccion.add(btnCancelar, BorderLayout.SOUTH);
-		
-		JScrollPane scrollPane = new JScrollPane();
-		pnlSeleccion.add(scrollPane, BorderLayout.CENTER);
-		
-		JPanel pnlVideo = new JPanel();
+		pnlVideo = new JPanel();
 		add(pnlVideo, BorderLayout.CENTER);
-		pnlVideo.setLayout(new BorderLayout(0, 0));
+		pnlVideo.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+	}
+	
+	private void mostrarVideos() {
+		pnlVideos.removeAll();
 		
-		JPanel pnlTitulo = new JPanel();
-		pnlVideo.add(pnlTitulo, BorderLayout.NORTH);
-		pnlTitulo.setLayout(new BoxLayout(pnlTitulo, BoxLayout.Y_AXIS));
+		List<Video> videos = Controlador.getUnicaInstancia().getPopulares();
 		
-		JLabel lblTitulo = new JLabel("Titulo");
-		lblTitulo.setFont(new Font("Dialog", Font.BOLD, 22));
-		lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlTitulo.add(lblTitulo);
+		for (Video v : videos) {
+			JButton boton = crearBotonVideo(v);
+			pnlVideos.add(boton);
+		}
 		
-		JLabel lblVisualizaciones = new JLabel("Visualizaciones: ");
-		lblVisualizaciones.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlTitulo.add(lblVisualizaciones);
+		pnlVideos.revalidate();
+		pnlVideos.repaint();
+	}
+	
+	private JButton crearBotonVideo(Video video) {
+		JButton boton = new JButton(video.getTitulo());
+		boton.setActionCommand(video.getTitulo());
+		boton.setIcon(PanelReproductor.getUnicaInstancia().getVideoWeb().getSmallThumb(video.getUrl()));
 		
-		JPanel pnlAddEtiqueta = new JPanel();
-		pnlAddEtiqueta.setBorder(new EmptyBorder(10, 10, 10, 10));
-		pnlVideo.add(pnlAddEtiqueta, BorderLayout.SOUTH);
-		pnlAddEtiqueta.setLayout(new BoxLayout(pnlAddEtiqueta, BoxLayout.X_AXIS));
+		boton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pnlVideo.removeAll();
+				pnlVideo.add(PanelReproductor.getUnicaInstancia());
+				Controlador.getUnicaInstancia().reproducirVideo(Controlador.getUnicaInstancia().getVideoPorTitulo(e.getActionCommand()));
+			}
+		});
 		
-		JLabel lblNuevaEtiqueta = new JLabel("Nueva etiqueta: ");
-		pnlAddEtiqueta.add(lblNuevaEtiqueta);
-		
-		txtNuevaEtiqueta = new JTextField();
-		pnlAddEtiqueta.add(txtNuevaEtiqueta);
-		txtNuevaEtiqueta.setColumns(10);
-		
-		JButton btnAdd = new JButton("Añadir");
-		pnlAddEtiqueta.add(btnAdd);
+		return boton;
+	}
+	
+	public void reload() {
+		mostrarVideos();
+		pnlVideo.removeAll();
+		PanelReproductor.getUnicaInstancia().detener();
 	}
 
 }

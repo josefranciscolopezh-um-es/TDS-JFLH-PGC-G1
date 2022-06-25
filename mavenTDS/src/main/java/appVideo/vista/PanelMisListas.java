@@ -3,27 +3,38 @@ package appVideo.vista;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import javax.swing.border.EmptyBorder;
+
+import appVideo.controlador.Controlador;
+import appVideo.dominio.Video;
+
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.BevelBorder;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import java.awt.Component;
 import java.awt.GridLayout;
-import javax.swing.JScrollPane;
-import java.awt.Font;
-import javax.swing.JTextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
+import javax.swing.JScrollPane;
+import javax.swing.BoxLayout;
+
+@SuppressWarnings("serial")
 public class PanelMisListas extends JPanel {
 	private static PanelMisListas unicaInstancia;
-	private JTextField txtNuevaEtiqueta;
+	
+	private JComboBox<String> listasVideos;
+	private JPanel pnlVideosLista;
+	private JPanel pnlVideo;
 	
 	public static PanelMisListas getUnicaInstancia() {
 		if (unicaInstancia == null)
 			unicaInstancia = new PanelMisListas();
 		return unicaInstancia;
 	}
+	
 	/**
 	 * Create the panel.
 	 */
@@ -39,58 +50,84 @@ public class PanelMisListas extends JPanel {
 		JPanel pnlSeleccionLista = new JPanel();
 		pnlSeleccionLista.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
 		pnlSeleccion.add(pnlSeleccionLista, BorderLayout.NORTH);
-		pnlSeleccionLista.setLayout(new GridLayout(3, 1, 5, 5));
+		pnlSeleccionLista.setLayout(new GridLayout(2, 1, 5, 5));
 		
-		JLabel lblSeleccioneLaLista = new JLabel("Seleccione la lista: ");
-		lblSeleccioneLaLista.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlSeleccionLista.add(lblSeleccioneLaLista);
+		JLabel lblSeleccionar = new JLabel("Seleccione la lista: ");
+		lblSeleccionar.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlSeleccionLista.add(lblSeleccionar);
 		
-		JComboBox comboBox = new JComboBox();
-		pnlSeleccionLista.add(comboBox);
+		listasVideos = new JComboBox<String>();
+		pnlSeleccionLista.add(listasVideos);
 		
-		JButton btnReproducir = new JButton("Reproducir");
-		btnReproducir.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlSeleccionLista.add(btnReproducir);
+		addListas();
 		
-		JButton btnCancelar = new JButton("Cancelar");
-		btnCancelar.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlSeleccion.add(btnCancelar, BorderLayout.SOUTH);
+		JScrollPane scrollVideos = new JScrollPane();
+		pnlSeleccion.add(scrollVideos, BorderLayout.CENTER);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		pnlSeleccion.add(scrollPane, BorderLayout.CENTER);
+		pnlVideosLista = new JPanel();
+		scrollVideos.setViewportView(pnlVideosLista);
+		pnlVideosLista.setLayout(new BoxLayout(pnlVideosLista, BoxLayout.Y_AXIS));
 		
-		JPanel pnlVideo = new JPanel();
+		pnlVideo = new JPanel();
 		add(pnlVideo, BorderLayout.CENTER);
 		pnlVideo.setLayout(new BorderLayout(0, 0));
-		
-		JPanel pnlTitulo = new JPanel();
-		pnlVideo.add(pnlTitulo, BorderLayout.NORTH);
-		pnlTitulo.setLayout(new BoxLayout(pnlTitulo, BoxLayout.Y_AXIS));
-		
-		JLabel lblTitulo = new JLabel("Titulo");
-		lblTitulo.setFont(new Font("Dialog", Font.BOLD, 22));
-		lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlTitulo.add(lblTitulo);
-		
-		JLabel lblVisualizaciones = new JLabel("Visualizaciones: ");
-		lblVisualizaciones.setAlignmentX(Component.CENTER_ALIGNMENT);
-		pnlTitulo.add(lblVisualizaciones);
-		
-		JPanel pnlAddEtiqueta = new JPanel();
-		pnlAddEtiqueta.setBorder(new EmptyBorder(10, 10, 10, 10));
-		pnlVideo.add(pnlAddEtiqueta, BorderLayout.SOUTH);
-		pnlAddEtiqueta.setLayout(new BoxLayout(pnlAddEtiqueta, BoxLayout.X_AXIS));
-		
-		JLabel lblNuevaEtiqueta = new JLabel("Nueva etiqueta: ");
-		pnlAddEtiqueta.add(lblNuevaEtiqueta);
-		
-		txtNuevaEtiqueta = new JTextField();
-		pnlAddEtiqueta.add(txtNuevaEtiqueta);
-		txtNuevaEtiqueta.setColumns(10);
-		
-		JButton btnAdd = new JButton("Añadir");
-		pnlAddEtiqueta.add(btnAdd);
 
+	}
+	
+	private void addListas() {
+		listasVideos.removeAllItems();
+		listasVideos.addItem("");
+		
+		List<String> nombresListas = Controlador.getUnicaInstancia().getNombresListasUsuario();
+		for (String lista : nombresListas)
+			listasVideos.addItem(lista);
+		
+		listasVideos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (listasVideos.getSelectedItem().equals(""))
+					pnlVideosLista.removeAll();
+				else
+					mostrarVideos((String)(listasVideos.getSelectedItem()));
+			}
+		});
+		
+	}
+	
+	private void mostrarVideos(String lista) {
+		pnlVideosLista.removeAll();
+		
+		List<Video> videos = Controlador.getUnicaInstancia().getVideosLista(lista);
+		
+		for (Video v : videos) {
+			JButton boton = crearBotonVideo(v);
+			pnlVideosLista.add(boton);
+		}
+		
+		pnlVideosLista.revalidate();
+		pnlVideosLista.repaint();
+	}
+	
+	private JButton crearBotonVideo(Video video) {
+		JButton boton = new JButton(video.getTitulo());
+		boton.setActionCommand(video.getTitulo());
+		boton.setIcon(PanelReproductor.getUnicaInstancia().getVideoWeb().getSmallThumb(video.getUrl()));
+		
+		boton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pnlVideo.removeAll();
+				pnlVideo.add(PanelReproductor.getUnicaInstancia());
+				Controlador.getUnicaInstancia().reproducirVideo(Controlador.getUnicaInstancia().getVideoPorTitulo(e.getActionCommand()));
+			}
+		});
+		
+		return boton;
+	}
+	
+	public void reload() {
+		addListas();
+		pnlVideosLista.removeAll();
+		pnlVideo.removeAll();
+		PanelReproductor.getUnicaInstancia().detener();
 	}
 
 }

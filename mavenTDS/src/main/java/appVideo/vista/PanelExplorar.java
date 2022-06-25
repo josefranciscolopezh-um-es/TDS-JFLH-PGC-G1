@@ -5,12 +5,16 @@ import java.awt.BorderLayout;
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 import javax.swing.border.TitledBorder;
+
+import appVideo.controlador.Controlador;
+import appVideo.dominio.Video;
+
 import javax.swing.JToggleButton;
-import javax.swing.JTextPane;
-import javax.swing.JList;
 import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.ComponentOrientation;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -19,12 +23,14 @@ import javax.swing.JButton;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import java.awt.GridLayout;
 import java.awt.FlowLayout;
 
+@SuppressWarnings("serial")
 public class PanelExplorar extends JPanel {
 	private static PanelExplorar unicaInstancia;
-	private JTextField textField;
+	private JTextField txtBusqueda;
+	private JPanel pnlBtnsEtiquetas;
+	private JPanel pnlResultados;
 	
 	public static PanelExplorar getUnicaInstancia() {
 		if (unicaInstancia == null)
@@ -44,52 +50,14 @@ public class PanelExplorar extends JPanel {
 		add(pnlEtiquetas, BorderLayout.EAST);
 		pnlEtiquetas.setLayout(new BoxLayout(pnlEtiquetas, BoxLayout.Y_AXIS));
 		
-		JScrollPane scrollPane = new JScrollPane();
-		pnlEtiquetas.add(scrollPane);
+		JScrollPane scrollEtiquetas = new JScrollPane();
+		pnlEtiquetas.add(scrollEtiquetas);
 		
-		JPanel panel = new JPanel();
-		scrollPane.setViewportView(panel);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		pnlBtnsEtiquetas = new JPanel();
+		scrollEtiquetas.setViewportView(pnlBtnsEtiquetas);
+		pnlBtnsEtiquetas.setLayout(new BoxLayout(pnlBtnsEtiquetas, BoxLayout.Y_AXIS));
 		
-		JToggleButton tglbtnDibujosAnimados = new JToggleButton("Dibujos Animados");
-		tglbtnDibujosAnimados.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnDibujosAnimados);
-		
-		JToggleButton tglbtnPelicula = new JToggleButton("Película");
-		tglbtnPelicula.setPreferredSize(new Dimension(160, 25));
-		tglbtnPelicula.setMaximumSize(new Dimension(160, 25));
-		tglbtnPelicula.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnPelicula);
-		
-		JToggleButton tglbtnSerie = new JToggleButton("Serie");
-		tglbtnSerie.setPreferredSize(new Dimension(160, 25));
-		tglbtnSerie.setMaximumSize(new Dimension(160, 25));
-		tglbtnSerie.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnSerie);
-		
-		JToggleButton tglbtnIntriga = new JToggleButton("Intriga");
-		tglbtnIntriga.setPreferredSize(new Dimension(160, 25));
-		tglbtnIntriga.setMaximumSize(new Dimension(160, 25));
-		tglbtnIntriga.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnIntriga);
-		
-		JToggleButton tglbtnTerror = new JToggleButton("Terror");
-		tglbtnTerror.setPreferredSize(new Dimension(160, 25));
-		tglbtnTerror.setMaximumSize(new Dimension(160, 25));
-		tglbtnTerror.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnTerror);
-		
-		JToggleButton tglbtnVideoclip = new JToggleButton("Videoclip");
-		tglbtnVideoclip.setPreferredSize(new Dimension(160, 25));
-		tglbtnVideoclip.setMaximumSize(new Dimension(160, 25));
-		tglbtnVideoclip.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnVideoclip);
-		
-		JToggleButton tglbtnInfantil = new JToggleButton("Infantil");
-		tglbtnInfantil.setPreferredSize(new Dimension(160, 25));
-		tglbtnInfantil.setMaximumSize(new Dimension(160, 25));
-		tglbtnInfantil.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panel.add(tglbtnInfantil);
+		addBotonesEtiquetas();
 		
 		JPanel pnlBusqueda = new JPanel();
 		add(pnlBusqueda, BorderLayout.CENTER);
@@ -105,20 +73,112 @@ public class PanelExplorar extends JPanel {
 		lblBuscarTitulo.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlBotones.add(lblBuscarTitulo, BorderLayout.WEST);
 		
-		textField = new JTextField();
-		pnlBotones.add(textField, BorderLayout.CENTER);
-		textField.setColumns(20);
+		txtBusqueda = new JTextField();
+		pnlBotones.add(txtBusqueda, BorderLayout.CENTER);
+		txtBusqueda.setColumns(20);
 		
 		JButton btnBuscar = new JButton("Buscar");
 		pnlBotones.add(btnBuscar, BorderLayout.EAST);
+		addManejadorBotonBuscar(btnBuscar);
 		
-		JButton btnLimpiarResultados = new JButton("Limpiar Resultados");
-		pnlBotones.add(btnLimpiarResultados, BorderLayout.SOUTH);
+		JButton btnLimpiar = new JButton("Limpiar Resultados");
+		pnlBotones.add(btnLimpiar, BorderLayout.SOUTH);
 		
-		JPanel pnlResultados = new JPanel();
+		addManejadorBotonLimpiar(btnLimpiar);
+		
+		JScrollPane scrollResultados = new JScrollPane();
+		pnlBusqueda.add(scrollResultados, BorderLayout.CENTER);
+		
+		pnlResultados = new JPanel();
+		scrollResultados.setViewportView(pnlResultados);
 		pnlResultados.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
-		pnlBusqueda.add(pnlResultados, BorderLayout.CENTER);
 		pnlResultados.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+	}
+	
+	private void addBotonesEtiquetas() {
+		pnlBtnsEtiquetas.removeAll();
+		List<String> etiquetas = Controlador.getUnicaInstancia().getAllNombresEtiquetas();
+		
+		for (String nombre : etiquetas)
+			crearBotonEtiqueta(nombre);
+		
+		pnlBtnsEtiquetas.revalidate();
+		pnlBtnsEtiquetas.repaint();
+	}
+
+	private void crearBotonEtiqueta(String nombre) {
+		JToggleButton tglbtnEtiqueta = new JToggleButton(nombre);
+		tglbtnEtiqueta.setPreferredSize(new Dimension(160, 25));
+		tglbtnEtiqueta.setMaximumSize(new Dimension(160, 25));
+		tglbtnEtiqueta.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlBtnsEtiquetas.add(tglbtnEtiqueta);
+	}
+	
+	private void buscarVideos() {
+		clearVideos();
+
+		List<String> etiquetas = new ArrayList<String>();
+		for (Component boton : pnlBtnsEtiquetas.getComponents()) {
+			if (((JToggleButton)boton).isSelected())
+				etiquetas.add(((JToggleButton)boton).getText());
+		}
+
+		String titulo = txtBusqueda.getText().trim();
+		List<Video> videos = Controlador.getUnicaInstancia().buscarVideo(titulo, etiquetas);
+
+		for (Video v : videos) {
+			JButton boton = crearBotonVideo(v);
+			pnlResultados.add(boton);
+		}
+
+		pnlResultados.revalidate();
+		pnlResultados.repaint();
+		txtBusqueda.setText("");
+	}
+
+	public void clearVideos() {
+		pnlResultados.removeAll();
+		pnlResultados.revalidate();
+		pnlResultados.repaint();
+		PanelReproductor.getUnicaInstancia().detener();
+	}
+	
+	private JButton crearBotonVideo(Video video) {
+		JButton boton = new JButton(video.getTitulo());
+		boton.setActionCommand(video.getTitulo());
+		boton.setIcon(PanelReproductor.getUnicaInstancia().getVideoWeb().getSmallThumb(video.getUrl()));
+		
+		boton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clearVideos();
+				pnlResultados.add(PanelReproductor.getUnicaInstancia());
+				Controlador.getUnicaInstancia().reproducirVideo(Controlador.getUnicaInstancia().getVideoPorTitulo(e.getActionCommand()));
+			}
+		});
+		
+		return boton;
+	}
+	
+	private void addManejadorBotonBuscar(JButton btnBuscar) {
+		btnBuscar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buscarVideos();
+			}
+		});
+	}
+	
+	private void addManejadorBotonLimpiar(JButton btnLimpiar) {
+		btnLimpiar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clearVideos();
+			}
+		});
+	}
+	
+	public void reload() {
+		txtBusqueda.setText("");
+		addBotonesEtiquetas();
+		clearVideos();
 	}
 
 }
