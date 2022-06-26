@@ -23,7 +23,7 @@ import javax.swing.JButton;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import java.awt.FlowLayout;
+import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
 public class PanelExplorar extends JPanel {
@@ -51,6 +51,7 @@ public class PanelExplorar extends JPanel {
 		pnlEtiquetas.setLayout(new BoxLayout(pnlEtiquetas, BoxLayout.Y_AXIS));
 		
 		JScrollPane scrollEtiquetas = new JScrollPane();
+		scrollEtiquetas.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlEtiquetas.add(scrollEtiquetas);
 		
 		pnlBtnsEtiquetas = new JPanel();
@@ -87,12 +88,13 @@ public class PanelExplorar extends JPanel {
 		addManejadorBotonLimpiar(btnLimpiar);
 		
 		JScrollPane scrollResultados = new JScrollPane();
+		scrollResultados.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlBusqueda.add(scrollResultados, BorderLayout.CENTER);
 		
 		pnlResultados = new JPanel();
 		scrollResultados.setViewportView(pnlResultados);
 		pnlResultados.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
-		pnlResultados.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		pnlResultados.setLayout(new BoxLayout(pnlResultados, BoxLayout.Y_AXIS));
 	}
 	
 	private void addBotonesEtiquetas() {

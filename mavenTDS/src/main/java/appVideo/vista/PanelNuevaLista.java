@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JScrollPane;
-import java.awt.FlowLayout;
+import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
 public class PanelNuevaLista extends JPanel {
@@ -78,12 +78,13 @@ public class PanelNuevaLista extends JPanel {
 		addManejadorBotonLimpiar(btnLimpiarResultados);
 		
 		JScrollPane scrollResultados = new JScrollPane();
+		scrollResultados.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlBusqueda.add(scrollResultados, BorderLayout.CENTER);
 		
 		pnlResultados = new JPanel();
 		scrollResultados.setViewportView(pnlResultados);
 		pnlResultados.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), new EmptyBorder(5, 5, 5, 5)));
-		pnlResultados.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		pnlResultados.setLayout(new BoxLayout(pnlResultados, BoxLayout.Y_AXIS));
 		
 		JPanel pnlLista = new JPanel();
 		add(pnlLista, BorderLayout.WEST);
@@ -118,6 +119,7 @@ public class PanelNuevaLista extends JPanel {
 		addManejadorBotonEliminarLista(btnEliminarLista);
 		
 		JScrollPane scrollContenido = new JScrollPane();
+		scrollContenido.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlLista.add(scrollContenido, BorderLayout.CENTER);
 		
 		pnlContenido = new JPanel();
@@ -211,6 +213,8 @@ public class PanelNuevaLista extends JPanel {
 					for (Component btnVideo : pnlContenido.getComponents()) {
 						if (((JButton)btnVideo).getText().equals(videoSeleccionado)) {
 							pnlContenido.remove(btnVideo);
+							pnlContenido.revalidate();
+							pnlContenido.repaint();
 							videoSeleccionado = null;
 							return;
 						}
@@ -225,6 +229,9 @@ public class PanelNuevaLista extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				if (listaActual == null) {
 					JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "No hay ninguna lista seleccionada", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				} else if (videosLista.isEmpty()) {
+					JOptionPane.showMessageDialog(PanelNuevaLista.getUnicaInstancia(), "No puede guardar una lista vacía", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				
@@ -275,6 +282,8 @@ public class PanelNuevaLista extends JPanel {
 		
 		JButton boton = crearBotonVideoLista(video);
 		pnlContenido.add(boton);
+		pnlContenido.revalidate();
+		pnlContenido.repaint();
 	}
 	
 	private JButton crearBotonVideoLista(Video video) {

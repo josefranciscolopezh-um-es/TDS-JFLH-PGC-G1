@@ -17,6 +17,7 @@ import appVideo.controlador.Controlador;
 import appVideo.dominio.Video;
 
 import java.awt.FlowLayout;
+import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
 public class PanelRecientes extends JPanel {
@@ -44,6 +45,7 @@ public class PanelRecientes extends JPanel {
 		pnlSeleccion.setLayout(new BorderLayout(0, 10));
 		
 		JScrollPane scrollVideos = new JScrollPane();
+		scrollVideos.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlSeleccion.add(scrollVideos, BorderLayout.CENTER);
 		
 		pnlVideos = new JPanel();

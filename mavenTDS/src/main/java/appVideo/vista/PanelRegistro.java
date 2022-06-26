@@ -140,7 +140,7 @@ public class PanelRegistro extends JPanel {
 		pnlCredenciales.add(pnlPasswordChk);
 		pnlPasswordChk.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblPasswordChk = new JLabel("* PasswordChk Contraseña: ");
+		JLabel lblPasswordChk = new JLabel("* Repetir Contraseña: ");
 		lblPasswordChk.setHorizontalAlignment(SwingConstants.RIGHT);
 		pnlPasswordChk.add(lblPasswordChk, BorderLayout.CENTER);
 		
@@ -172,9 +172,9 @@ public class PanelRegistro extends JPanel {
 				if (checkFields()) {
 					boolean registrado = false;
 					registrado = Controlador.getUnicaInstancia().registrarUsuario(txtNombre.getText(),
-							txtApellidos.getText(), txtEmail.getText(), txtLogin.getText(),
-							new String(txtPassword.getPassword()), 
-							Controlador.getUnicaInstancia().getFormatoFecha().format(fechaNacimiento.getDate()));
+							txtApellidos.getText(), txtEmail.getText(), 
+							Controlador.getUnicaInstancia().getFormatoFecha().format(fechaNacimiento.getDate()),
+							txtLogin.getText(), new String(txtPassword.getPassword()));
 					if (registrado) {
 						clearFields();
 						VentanaPrincipal.getUnicaInstancia().registroRealizado();

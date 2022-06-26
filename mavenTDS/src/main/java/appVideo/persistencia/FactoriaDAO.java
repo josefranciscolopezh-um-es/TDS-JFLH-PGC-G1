@@ -5,7 +5,7 @@ package appVideo.persistencia;
 public abstract class FactoriaDAO {
 	private static FactoriaDAO unicaInstancia = null;
 	
-	public static final String DAO_TDS = "appViddeo.persistencia.TDSFactoriaDAO";
+	public static final String DAO_TDS = "appVideo.persistencia.TDSFactoriaDAO";
 		
 	/** 
 	 * Crea un tipo de factoria DAO.

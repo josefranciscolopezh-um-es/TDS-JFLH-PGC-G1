@@ -16,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 
 import appVideo.controlador.Controlador;
 import appVideo.dominio.Video;
+import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
 public class PanelPopulares extends JPanel {
@@ -43,6 +44,7 @@ public class PanelPopulares extends JPanel {
 		pnlSeleccion.setLayout(new BorderLayout(0, 10));
 		
 		JScrollPane scrollVideos = new JScrollPane();
+		scrollVideos.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlSeleccion.add(scrollVideos, BorderLayout.CENTER);
 		
 		pnlVideos = new JPanel();

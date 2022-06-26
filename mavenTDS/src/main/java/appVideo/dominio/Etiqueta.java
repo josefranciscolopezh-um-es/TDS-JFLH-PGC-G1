@@ -20,4 +20,13 @@ public class Etiqueta {
 	public String getNombre() {
 		return nombre;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Etiqueta) {
+			if (((Etiqueta)o).getNombre().equals(nombre))
+				return true;
+		}
+		return false;
+	}
 }

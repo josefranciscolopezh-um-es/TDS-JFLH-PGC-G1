@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.swing.JScrollPane;
 import javax.swing.BoxLayout;
+import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
 public class PanelMisListas extends JPanel {
@@ -62,6 +63,7 @@ public class PanelMisListas extends JPanel {
 		addListas();
 		
 		JScrollPane scrollVideos = new JScrollPane();
+		scrollVideos.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlSeleccion.add(scrollVideos, BorderLayout.CENTER);
 		
 		pnlVideosLista = new JPanel();
@@ -75,8 +77,10 @@ public class PanelMisListas extends JPanel {
 	}
 	
 	private void addListas() {
-		listasVideos.removeAllItems();
+		if (listasVideos.getItemCount() > 0)
+			listasVideos.removeAllItems();
 		listasVideos.addItem("");
+		listasVideos.setSelectedIndex(0);
 		
 		List<String> nombresListas = Controlador.getUnicaInstancia().getNombresListasUsuario();
 		for (String lista : nombresListas)
@@ -84,6 +88,9 @@ public class PanelMisListas extends JPanel {
 		
 		listasVideos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				Object i = listasVideos.getSelectedItem();
+				if (i == null) 
+					return;
 				if (listasVideos.getSelectedItem().equals(""))
 					pnlVideosLista.removeAll();
 				else

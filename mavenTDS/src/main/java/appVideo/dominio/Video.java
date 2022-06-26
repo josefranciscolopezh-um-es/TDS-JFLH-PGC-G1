@@ -43,6 +43,10 @@ public class Video {
 		return numRepro;
 	}
 	
+	public void setNumRepro(int numRepro) {
+		this.numRepro = numRepro;
+	}
+	
 	public void aumentarRepro() {
 		numRepro++;
 	}
@@ -57,5 +61,14 @@ public class Video {
 	
 	public boolean removeEtiqueta(Etiqueta etiqueta) {
 		return etiquetas.remove(etiqueta);
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Video) {
+			if (((Video)o).getUrl().equals(url))
+				return true;
+		}
+		return false;
 	}
 }

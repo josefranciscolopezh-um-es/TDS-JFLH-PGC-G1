@@ -83,15 +83,13 @@ public class PanelLogin extends JPanel {
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (checkFields()) {
-					boolean login = Controlador.getUnicaInstancia().loginUsuario(txtLogin.getText(),
-							new String(txtPassword.getPassword()));
+					boolean login = Controlador.getUnicaInstancia().loginUsuario(txtLogin.getText(), new String(txtPassword.getPassword()));
 	
 					if (login) {
 						clearFields();
 						VentanaPrincipal.getUnicaInstancia().loginRealizado();
 					} else
-						JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Nombre de usuario o contraseña incorrecto",
-								"Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(PanelLogin.getUnicaInstancia(), "Nombre de usuario o contraseña incorrecto", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});

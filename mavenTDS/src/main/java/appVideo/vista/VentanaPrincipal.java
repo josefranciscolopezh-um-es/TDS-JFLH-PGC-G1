@@ -6,11 +6,13 @@ import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.SwingConstants;
 import javax.swing.BoxLayout;
 import javax.swing.border.SoftBevelBorder;
 
 import appVideo.controlador.Controlador;
+import pulsador.IEncendidoListener;
 import javax.swing.border.BevelBorder;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -18,14 +20,16 @@ import java.awt.Color;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.EventObject;
 
 import javax.swing.UIManager;
 import java.awt.Dimension;
 import javax.swing.border.EtchedBorder;
 import java.awt.Component;
 import javax.swing.Box;
+import pulsador.Luz;
 
-public class VentanaPrincipal {
+public class VentanaPrincipal implements IEncendidoListener{
 	private static VentanaPrincipal unicaInstancia;
 	private JFrame frmPrincipal;
 	private JPanel pnlPrincipal;
@@ -115,6 +119,11 @@ public class VentanaPrincipal {
 		FlowLayout fl_pnlMenu = (FlowLayout) pnlMenu.getLayout();
 		fl_pnlMenu.setAlignment(FlowLayout.LEFT);
 		pnlSuperior.add(pnlMenu);
+		
+		Luz luz = new Luz();
+		luz.setColor(Color.RED);
+		luz.addEncendidoListener(this);
+		pnlMenu.add(luz);
 		
 		JButton btnExplorar = new JButton("Explorar");
 		btnExplorar.setBackground(Color.ORANGE);
@@ -318,7 +327,11 @@ public class VentanaPrincipal {
 				int respuesta = JOptionPane.showConfirmDialog(PanelNuevaLista.getUnicaInstancia(), "¿Desea generar un PDF con sus listas de videos?", "Aviso", JOptionPane.YES_NO_OPTION);
 				
 				if (respuesta == JOptionPane.YES_OPTION) {
-				// Generar PDF con listas de videos del usuario
+					if (Controlador.getUnicaInstancia().generarPdf()) {
+						JOptionPane.showMessageDialog(frmPrincipal, "Documento generado correctamente", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(frmPrincipal, "Se ha producido un error al intentar generar el documento", "Error", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		});
@@ -326,7 +339,7 @@ public class VentanaPrincipal {
 	
 	private void cambiarPanel(JPanel panel) {
 		// Cambia el panel principal de la ventana
-		
+		PanelReproductor.getUnicaInstancia().detener();
 		pnlPrincipal.removeAll();
 		pnlPrincipal.add(panel);
 		pnlPrincipal.revalidate();
@@ -351,8 +364,7 @@ public class VentanaPrincipal {
 	}
 	
 	public void registroRealizado() {
-		JOptionPane.showMessageDialog(frmPrincipal, "Usuario registrado correctamente", "Registro",
-				JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(frmPrincipal, "Usuario registrado correctamente", "Registro", JOptionPane.INFORMATION_MESSAGE);
 		
 		cambiarPanel(PanelLogin.getUnicaInstancia());
 	}
@@ -371,4 +383,15 @@ public class VentanaPrincipal {
 		lblLogin.setText("Inicia Sesión o Registrate");
 	}
 	
+	@Override
+	public void enteradoCambioEncendido(EventObject e) {
+		JFileChooser ventanaFichero = new JFileChooser();
+
+		if (ventanaFichero.showOpenDialog(frmPrincipal) == JFileChooser.APPROVE_OPTION) {
+			String fichero = ventanaFichero.getSelectedFile().getAbsolutePath();
+			
+			if (fichero != null)
+				Controlador.getUnicaInstancia().getNuevosVideos(fichero);
+		}
+	}
 }

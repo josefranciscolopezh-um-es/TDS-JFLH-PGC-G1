@@ -1,10 +1,18 @@
 package appVideo.controlador;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EventObject;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import appVideo.dominio.CatalogoEtiquetas;
 import appVideo.dominio.CatalogoUsuarios;
@@ -21,8 +29,11 @@ import appVideo.persistencia.IAdaptadorListaVideosDAO;
 import appVideo.persistencia.IAdaptadorUsuarioDAO;
 import appVideo.persistencia.IAdaptadorVideoDAO;
 import appVideo.vista.PanelReproductor;
+import umu.tds.componente.CargadorVideos;
+import umu.tds.componente.VideosEvent;
+import umu.tds.componente.VideosListener;
 
-public final class Controlador {
+public final class Controlador implements VideosListener {
 
 	public static final int NUM_POPULARES = 10;
 
@@ -40,9 +51,14 @@ public final class Controlador {
 	private CatalogoEtiquetas catalogoEtiquetas;
 	
 	private Usuario usuarioActual;
+	
+	private CargadorVideos cargadorVideos;
 
 	private Controlador() {
 		usuarioActual = null;
+		
+		cargadorVideos = CargadorVideos.getUnicaInstancia();
+		cargadorVideos.addVideosListener(this);
 		
 		inicializarAdaptadores();
 		
@@ -64,6 +80,7 @@ public final class Controlador {
 		}
 		adaptadorUsuario = factoria.getUsuarioDAO();
 		adaptadorVideo = factoria.getVideoDAO();
+		adaptadorListaVideos = factoria.getListaVideosDAO();
 		adaptadorEtiqueta = factoria.getEtiquetaDAO();
 	}
 
@@ -90,11 +107,11 @@ public final class Controlador {
 		return false;
 	}
 
-	public boolean registrarUsuario(String nombre, String apellidos, String email, String login, String password, String fechaNacimiento) {
+	public boolean registrarUsuario(String nombre, String apellidos, String email, String fechaNacimiento, String login, String password) {
 		
 		if (esUsuarioRegistrado(login))
 			return false;
-		Usuario usuario = new Usuario(nombre, apellidos, email, login, password, fechaNacimiento);
+		Usuario usuario = new Usuario(nombre, apellidos, email, fechaNacimiento, login, password);
 
 		adaptadorUsuario.createUsuario(usuario);
 
@@ -102,19 +119,6 @@ public final class Controlador {
 		
 		return true;
 	}
-
-	/*
-	public boolean borrarUsuario(Usuario usuario) {
-		if (!esUsuarioRegistrado(usuario.getLogin()))
-			return false;
-
-		UsuarioDAO usuarioDAO = factoria.getUsuarioDAO(); // Adaptador DAO para borrar el Usuario de la BD 
-		usuarioDAO.delete(usuario);
-
-		CatalogoUsuarios.getUnicaInstancia().removeUsuario(usuario);
-		return true;
-	}
-	*/
 	
 	public List<Video> buscarVideo(String titulo){
 		// Se da una cadena de búsqueda y devuelve un ArrayList<Video> con los videos cuyos títulos contengan la cadena
@@ -311,5 +315,58 @@ public final class Controlador {
 	
 	public List<Video> getPopulares(){
 		return catalogoVideos.getVideos().stream().sorted(Comparator.comparingInt(Video::getNumRepro).reversed()).limit(NUM_POPULARES).collect(Collectors.toList());
+	}
+
+	public boolean generarPdf() {
+		if (usuarioActual != null && usuarioActual.isPremium()) {
+			Document pdf = new Document();
+			try {
+				PdfWriter.getInstance(pdf, new FileOutputStream("AppVideo-MisListas.pdf"));
+
+				pdf.open();
+				
+				pdf.addTitle("AppVideo - Listas de videos de " + usuarioActual.getNombre() + " " + usuarioActual.getApellidos());
+				pdf.add(new Paragraph("AppVideo - Listas de videos de " + usuarioActual.getNombre() + " " + usuarioActual.getApellidos()));
+				pdf.add(new Paragraph("\n"));
+	
+				for (ListaVideos l : usuarioActual.getListas()) {
+					pdf.add(new Paragraph("Lista '" + l.getNombre() + "':\n"));
+					
+					for (Video v : l.getVideos()) {
+						pdf.add(new Paragraph("--> " + v.getTitulo()));
+					}
+	
+					pdf.add(new Paragraph("\n"));
+				}
+	
+				pdf.close();
+				return true;
+			} catch (FileNotFoundException | DocumentException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public void enteradoCambioVideos(EventObject e) {
+		if (e instanceof VideosEvent) {
+			Video video;
+			for (umu.tds.componente.Video v : ((VideosEvent) e).getVideos().getVideo()) {
+				if (catalogoVideos.getVideo(v.getTitulo()) == null) {
+					video = new Video(v.getTitulo(), v.getURL());
+					adaptadorVideo.createVideo(video);
+					catalogoVideos.addVideo(video);
+					
+					for (String etiqueta : v.getEtiqueta())
+						addEtiqueta(video, etiqueta);
+				}
+			}
+		}
+	}
+
+	public void getNuevosVideos(String fichero) {
+		cargadorVideos.setFileVideo(fichero);
 	}
 }
