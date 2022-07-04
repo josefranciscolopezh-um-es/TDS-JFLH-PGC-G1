@@ -172,7 +172,13 @@ public class PanelNuevaLista extends JPanel {
 						txtNombreLista.setText("");
 						return;
 					}
+				} else {
+					for (Video v : videosLista)
+						pnlContenido.add(crearBotonVideoLista(v));
+					pnlContenido.revalidate();
+					pnlContenido.repaint();
 				}
+				
 				listaActual = txtNombreLista.getText();
 			}
 		});

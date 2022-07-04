@@ -31,7 +31,14 @@ public class AdaptadorUsuarioAppVideo implements IAdaptadorUsuarioDAO {
 	
 	private static ServicioPersistencia servPersistencia;
 	private static AdaptadorUsuarioAppVideo unicaInstancia = null;
-
+	
+	/*
+	public void reset() {
+		for (Entidad e : servPersistencia.recuperarEntidades())
+			servPersistencia.borrarEntidad(e);
+	}
+	*/
+	
 	public static AdaptadorUsuarioAppVideo getUnicaInstancia() { // patron singleton
 		if (unicaInstancia == null)
 			return new AdaptadorUsuarioAppVideo();

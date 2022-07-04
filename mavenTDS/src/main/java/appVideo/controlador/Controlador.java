@@ -283,7 +283,7 @@ public final class Controlador implements VideosListener {
 	public List<Video> getVideosLista(String nombre) {
 		for (ListaVideos l : usuarioActual.getListas()) {
 			if (l.getNombre().equals(nombre))
-				return l.getVideos();
+				return new ArrayList<Video>(l.getVideos());
 		}
 		return null;
 	}
@@ -293,6 +293,7 @@ public final class Controlador implements VideosListener {
 			if (l.getNombre().equals(nombreLista)) {
 				
 				usuarioActual.removeLista(l);
+				adaptadorUsuario.updateUsuario(usuarioActual);
 				adaptadorListaVideos.deleteListaVideos(l);
 				
 				return;
@@ -310,6 +311,7 @@ public final class Controlador implements VideosListener {
 		
 		ListaVideos lista = new ListaVideos(nombre, videos);
 		usuarioActual.addLista(lista);
+		adaptadorUsuario.updateUsuario(usuarioActual);
 		adaptadorListaVideos.createListaVideos(lista);
 	}
 	
